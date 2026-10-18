@@ -1,3 +1,21 @@
+# 根目录按白名单发布：运行代码、实际依赖和当前定稿 PRD。
+# 根目录其他草稿、历史文档、候选知识库和过程资料仅留在本机。
+/*
+!/.gitignore
+!/.gitattributes
+!/AGENTS.md
+!/procurement_eval_v08/
+!/采购Agent_正式知识库_v1/
+!/采购Agent_PRD_v1.2_Agent首版开发定稿.md
+
+# 现有 Evaluation 的输入依赖，不是运行报告或原始执行证据。
+!/评估case/
+/评估case/*
+!/评估case/procurement_eval_v4/
+!/评估case/rag_golden_v1/
+!/评估case/rag_golden_v1_2_accepted_candidate/
+!/评估case/下载采购 Agent RAG 42 Case 统一评估适配版 v2/
+
 # 本地环境与凭据：模板可提交，真实密钥、认证配置不可提交。
 .env
 .env.*
@@ -59,14 +77,5 @@ backend_contract_results.json
 /procurement_eval_v08/evaluation/EVAL_*_IMPLEMENTATION_REPORT.md
 /procurement_eval_v08/evaluation/EVAL_*_SCORING_REPORT.md
 
-# 历史审校输出，保留构建脚本、正式知识库及其 manifest。
-/采购Agent_知识库审校_V1-V4_20261013/来源核验记录.md
-/采购Agent_知识库审校_V1-V4_20261013/审校报告.md
-/采购Agent_知识库审校_V1-V4_20261013/审校验证结果.md
-/采购Agent_知识库审校_V1-V4_20261013/原件哈希核验.csv
-/采购Agent_知识库审校_V1-V4_20261013/逐篇审校台账.csv
-/采购Agent_知识库审校_V1-V4_20261013/逐篇审校台账.json
-
-# 下载/导出压缩包和内部项目管理表；展开后的评估 Case 仍可提交。
+# 下载/导出压缩包不公开，根目录内部项目管理表已由白名单排除。
 *.zip
-/AI采购申请预审Agent_项目管理.xlsx
