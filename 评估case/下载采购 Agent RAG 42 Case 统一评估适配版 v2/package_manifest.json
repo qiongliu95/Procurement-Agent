@@ -1,0 +1,30 @@
+{
+  "version": "2.0",
+  "case_count": 42,
+  "files": {
+    "cases_v2.csv": {
+      "sha256": "4e6ab67638545fbd816f314721e6f69dd3f2ab1b99d07e0f4d523f286a17f34e",
+      "bytes": 21921
+    },
+    "validate_package.py": {
+      "sha256": "53318b64311e2ce1a2702ab0fe494f36c08bf3b522c65153c7c19cc90fb36a0f",
+      "bytes": 961
+    },
+    "cases_v2.jsonl": {
+      "sha256": "366d841add85e303ef8e8a55703d673fd2dd2ae73c16c1e26502530ce7647ea2",
+      "bytes": 108515
+    },
+    "ORIGINAL_V1_REFERENCE.csv": {
+      "sha256": "15f27622f89666a807d4e1615f3c0a41dd914801582c8868a80c0a90e3a3ed26",
+      "bytes": 11144
+    },
+    "README.md": {
+      "sha256": "0f4613bf77b05eeecd3a2d6a1e5e954013d5cbcd9c482621483f3f01108aee29",
+      "bytes": 3316
+    },
+    "framework_mapping.json": {
+      "sha256": "71f0bbb2a3a4d4c4217557f0d54a9e7f64b00972e31f5974f595a8c16b9b1b46",
+      "bytes": 2278
+    }
+  }
+}

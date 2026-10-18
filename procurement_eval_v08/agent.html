@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>AI 采购 Agent v1</title>
+  <style>
+    :root{--bg:#f4f6f8;--card:#fff;--ink:#18212b;--muted:#667281;--brand:#1769aa;--line:#dce2e8;--ok:#157347;--warn:#985c00}
+    *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 system-ui,"Microsoft YaHei",sans-serif}
+    main{max-width:880px;margin:0 auto;min-height:100vh;padding:24px 16px;display:flex;flex-direction:column;gap:14px}
+    header,.composer,.panel{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:0 5px 18px #1b273511}
+    header{padding:18px 20px;display:flex;justify-content:space-between;align-items:center}h1{font-size:20px;margin:0}.sub{color:var(--muted);font-size:13px}.header-actions{display:flex;align-items:center;gap:8px}
+    .identity{padding:5px 10px;border-radius:999px;background:#e9f2fb;color:#12578e;font-weight:650}
+    #messages{flex:1;min-height:420px;display:flex;flex-direction:column;gap:10px;padding:4px}
+    .msg{max-width:82%;padding:11px 14px;border-radius:13px;white-space:pre-wrap}.user{align-self:flex-end;background:var(--brand);color:#fff}.assistant{align-self:flex-start;background:var(--card);border:1px solid var(--line)}
+    .meta{margin-top:8px;color:var(--muted);font-size:12px;display:flex;gap:8px;flex-wrap:wrap}.pill{border:1px solid var(--line);border-radius:999px;padding:1px 7px;background:#fff}
+    .confirm{padding:15px 17px;border-left:4px solid var(--warn)}.result{padding:15px 17px;border-left:4px solid var(--ok)}.panel h2{font-size:15px;margin:0 0 8px}.kv{display:grid;grid-template-columns:110px 1fr;gap:5px 12px}.kv div:nth-child(odd){color:var(--muted)}
+    .actions{display:flex;gap:8px;margin-top:12px}button{border:1px solid var(--line);background:#fff;border-radius:9px;padding:9px 14px;cursor:pointer}button.primary{background:var(--brand);border-color:var(--brand);color:#fff}button:disabled{opacity:.55;cursor:wait}
+    .composer{padding:12px;display:flex;gap:9px}textarea{flex:1;border:1px solid var(--line);border-radius:10px;padding:11px;resize:vertical;min-height:48px;font:inherit}
+    #status{height:20px;color:var(--muted);font-size:13px;padding-left:5px}.empty{text-align:center;color:var(--muted);margin:auto}
+  </style>
+</head>
+<body>
+<main>
+  <header><div><h1>AI 采购 Agent v1</h1><div class="sub">新建、查询、修改采购申请</div></div><div class="header-actions"><button id="clearSession">清空会话</button><div class="identity">可信身份：U01</div></div></header>
+  <section id="messages"><div class="empty" id="empty">请用自然语言描述采购需求，或查询、修改已有申请。</div></section>
+  <div id="status"></div>
+  <form class="composer" id="composer"><textarea id="input" placeholder="例如：帮我创建2台显示器的采购申请，用于市场部办公。供应商与单价由目录自动读取。"></textarea><button class="primary" id="send">发送</button></form>
+</main>
+<script>
+const messages=document.querySelector('#messages'),statusEl=document.querySelector('#status'),send=document.querySelector('#send'),input=document.querySelector('#input'),clearSession=document.querySelector('#clearSession');
+function addMessage(role,text,meta){document.querySelector('#empty')?.remove();const box=document.createElement('div');box.className='msg '+role;box.textContent=text;if(meta){const m=document.createElement('div');m.className='meta';for(const value of meta){if(!value)continue;const p=document.createElement('span');p.className='pill';p.textContent=value;m.appendChild(p)}box.appendChild(m)}messages.appendChild(box);box.scrollIntoView({behavior:'smooth',block:'end'})}
+function addPanel(kind,title,content){const panel=document.createElement('section');panel.className='panel '+kind;const h=document.createElement('h2');h.textContent=title;panel.appendChild(h);const body=document.createElement('div');body.textContent=content;panel.appendChild(body);messages.appendChild(panel);panel.scrollIntoView({behavior:'smooth',block:'end'});return panel}
+// 完整成交详情由卡片承载；字段追问只展示本轮回答。刷新与即时回复共用同一规则。
+function answerText(text,result){return result?.result_type==='history'&&result.display_mode==='full'&&result.history?.length?result.summary||text:text}
+function addResult(result){if(!result)return;const type=result.result_type||((result.request_id)?'request':'consultation');if(type==='knowledge'||type==='rules'||type==='consultation')return;if(type==='history'){if(result.display_mode==='fields')return;const records=result.history||[];if(!records.length)return;addPanel('result','历史成交记录',records.map((x,i)=>`${i+1}. ${x.item_spec||'未命名'} × ${x.quantity??'—'}，单价 ¥${x.unit_price??'—'} ${x.currency||''}，金额 ¥${x.amount??'—'}，成交日期 ${x.purchase_date||'未记录'}，供应商 ${x.supplier_name||'未记录'}，申请 ${(x.source||{}).request_id||'—'}，PO ${(x.source||{}).po_id||'—'}`).join('\n'));return}if(type==='products'){const products=result.products||[];if(!products.length)return;addPanel('result','商品目录',products.map((x,i)=>`${i+1}. ${x.code||'—'} ${x.name||'未命名'}，${x.brand_model||''} ${x.specification||''}，采购价 ¥${x.purchase_price??'—'}`).join('\n'));return}if(type!=='request')return;const panel=addPanel('result','已核验采购申请','');const grid=document.createElement('div');grid.className='kv';const rows=[['申请编号',result.request_id],['状态',result.state],['版本',result.version],['金额',result.amount?'¥'+result.amount:'—'],['当前审批人',result.approval?.current_approver||'无待审批节点'],['最终审批级别',result.approval?.required_approver||'—'],['PO',result.po?.po_id||'尚未创建']];for(const [k,v] of rows){const a=document.createElement('div');a.textContent=k;const b=document.createElement('div');b.textContent=v??'—';grid.append(a,b)}panel.appendChild(grid)}
+function addConfirmation(c){if(!c)return;const panel=addPanel('confirm','请确认写入操作',c.summary);const actions=document.createElement('div');actions.className='actions';const yes=document.createElement('button');yes.className='primary';yes.textContent='确认执行';const no=document.createElement('button');no.textContent='取消';yes.onclick=()=>confirmAction(c.action_id,'confirm',yes,no);no.onclick=()=>confirmAction(c.action_id,'cancel',yes,no);actions.append(yes,no);panel.appendChild(actions)}
+async function api(path,body){const response=await fetch(path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});const data=await response.json();if(!response.ok)throw new Error(data.error_code||('HTTP '+response.status));return data}
+function render(data){addMessage('assistant',answerText(data.message,data.result));addConfirmation(data.confirmation);addResult(data.result)}
+async function confirmAction(actionId,decision,...buttons){buttons.forEach(x=>x.disabled=true);statusEl.textContent=decision==='confirm'?'正在校验并执行…':'正在取消…';try{render(await api('/api/confirm',{action_id:actionId,decision}));buttons.forEach(x=>{x.disabled=true;x.textContent='已处理'})}catch(e){addMessage('assistant','操作失败：'+e.message);buttons.forEach(x=>x.disabled=false)}finally{statusEl.textContent=''}}
+document.querySelector('#composer').addEventListener('submit',async event=>{event.preventDefault();const message=input.value.trim();if(!message)return;addMessage('user',message);input.value='';send.disabled=true;statusEl.textContent='模型正在理解目标并调用授权只读工具…';try{render(await api('/api/chat',{message}))}catch(e){addMessage('assistant','请求失败：'+e.message)}finally{send.disabled=false;statusEl.textContent='';input.focus()}});
+async function restoreSession(){try{const response=await fetch('/api/session');const data=await response.json();for(const item of data.messages||[]){addMessage(item.role,answerText(item.content,item.result));addResult(item.result)}addConfirmation(data.pending_confirmation)}catch(e){addMessage('assistant','会话恢复失败：'+e.message)}}
+clearSession.onclick=async()=>{if(!window.confirm('确定清空本聊天记录和未完成任务吗？已写入的采购业务数据不会删除。'))return;clearSession.disabled=true;try{await api('/api/session/clear',{});messages.replaceChildren();const placeholder=document.createElement('div');placeholder.className='empty';placeholder.id='empty';placeholder.textContent='会话已清空，请描述新的采购需求。';messages.appendChild(placeholder)}catch(e){addMessage('assistant','清空失败：'+e.message)}finally{clearSession.disabled=false}};
+restoreSession();
+</script>
+</body>
+</html>

@@ -1,0 +1,17 @@
+{
+  "case_count": 42,
+  "categories": {
+    "单条件": 10,
+    "复合条件": 10,
+    "跨文档综合": 10,
+    "证据不足": 6,
+    "知识/API路由": 6
+  },
+  "source": "V1-V4 original 65 candidate documents, not local revised 52 corpus",
+  "review_required": true,
+  "files": {
+    "rag_cases.csv": "15f27622f89666a807d4e1615f3c0a41dd914801582c8868a80c0a90e3a3ed26",
+    "rag_cases.jsonl": "0ffe8584a8763af489fab85b222d3eebb2dc7ebab650e12faf530a0aeafe7a67",
+    "README.md": "9fe5de5b71b718d02ea219037857698446bfb864169b3550f30ef5bed2340248"
+  }
+}

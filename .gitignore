@@ -1,0 +1,72 @@
+# 本地环境与凭据：模板可提交，真实密钥、认证配置不可提交。
+.env
+.env.*
+!.env.example
+!.env.sample
+!.env.template
+.aws/
+.ssh/
+secrets/
+credentials.json
+credentials.*.json
+service-account*.json
+*.pem
+*.key
+*.p12
+*.pfx
+id_rsa
+id_ed25519
+
+# 本机依赖、缓存、编辑器与系统临时文件。
+.venv*/
+venv/
+env/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+desktop.ini
+~$*
+
+# 运行数据、数据库及其事务文件；不删除本地数据。
+runtime_data/
+*.sqlite
+*.sqlite3
+*.sqlite-*
+*.sqlite3-*
+*.db
+*.db-*
+*.log
+*.log.*
+*.pid
+
+# 开发报告与评估产物。Case、源码和正式资料不按扩展名一刀切排除。
+/reports/
+/procurement_eval_v08/reports/
+/procurement_eval_v08/evaluation/reports/*
+!/procurement_eval_v08/evaluation/reports/.gitkeep
+/procurement_eval_v08/evaluation/runs/*
+!/procurement_eval_v08/evaluation/runs/.gitkeep
+backend_contract_results.json
+/procurement_eval_v08/evaluation/EVAL_*_IMPLEMENTATION_REPORT.md
+/procurement_eval_v08/evaluation/EVAL_*_SCORING_REPORT.md
+
+# 历史审校输出，保留构建脚本、正式知识库及其 manifest。
+/采购Agent_知识库审校_V1-V4_20261013/来源核验记录.md
+/采购Agent_知识库审校_V1-V4_20261013/审校报告.md
+/采购Agent_知识库审校_V1-V4_20261013/审校验证结果.md
+/采购Agent_知识库审校_V1-V4_20261013/原件哈希核验.csv
+/采购Agent_知识库审校_V1-V4_20261013/逐篇审校台账.csv
+/采购Agent_知识库审校_V1-V4_20261013/逐篇审校台账.json
+
+# 下载/导出压缩包和内部项目管理表；展开后的评估 Case 仍可提交。
+*.zip
+/AI采购申请预审Agent_项目管理.xlsx

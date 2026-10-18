@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>采购业务模拟器 v1</title>
+  <style>
+    :root{color-scheme:light;--ink:#172033;--muted:#687184;--line:#dfe3ea;--brand:#2457d6;--bg:#f5f7fb;--ok:#147a4a;--warn:#a65b00}
+    *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 system-ui,"Microsoft YaHei",sans-serif}
+    header{background:#fff;border-bottom:1px solid var(--line);padding:18px 28px;display:flex;gap:20px;align-items:center;justify-content:space-between}
+    h1,h2,h3{margin:0}h1{font-size:21px}h2{font-size:17px;margin-bottom:12px}h3{font-size:14px}
+    main{max-width:1220px;margin:22px auto;padding:0 18px;display:grid;grid-template-columns:1.15fr .85fr;gap:18px}
+    .card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px;box-shadow:0 2px 9px #1d2d5010}.wide{grid-column:1/-1}
+    .toolbar,.actions,.form-grid{display:flex;gap:9px;align-items:center;flex-wrap:wrap}.form-grid label{flex:1 1 150px;color:var(--muted)}
+    input,select,button{font:inherit;border:1px solid #cbd2df;border-radius:7px;padding:8px 10px;background:#fff}input{width:100%;display:block;margin-top:4px}
+    button{cursor:pointer}button.primary{background:var(--brand);color:#fff;border-color:var(--brand)}button.danger{color:#a42424}.muted{color:var(--muted)}
+    .request{border-top:1px solid var(--line);padding:12px 0}.request:first-child{border-top:0}.request-head{display:flex;justify-content:space-between;gap:12px}
+    .pill{display:inline-block;padding:2px 8px;border-radius:999px;background:#edf2ff;color:#244ca3;font-size:12px}.amount{font-weight:700}.kv{display:grid;grid-template-columns:120px 1fr;gap:6px 10px;margin-top:12px}.kv div:nth-child(odd){color:var(--muted)}
+    table{border-collapse:collapse;width:100%;font-size:13px}th,td{text-align:left;border-bottom:1px solid var(--line);padding:8px 6px}th{color:var(--muted)}
+    #products{height:456px;overflow:auto;border:1px solid var(--line);border-radius:8px}#products table{min-width:1050px}
+    #products th{position:sticky;top:0;background:#fff;z-index:1}#products th,#products td{height:40px;white-space:nowrap}
+    #notice{min-height:22px;color:var(--ok)}#notice.error{color:#b42318}.empty{color:var(--muted);padding:10px 0}
+    @media(max-width:820px){main{grid-template-columns:1fr}.wide{grid-column:auto}header{align-items:flex-start;flex-direction:column}.kv{grid-template-columns:100px 1fr}}
+  </style>
+</head>
+<body>
+<header>
+  <div><h1>采购业务模拟器 v1</h1><div class="muted">本机隔离演示 · 单品类 / 单条目 / CNY</div></div>
+  <div class="toolbar">
+    <label>测试身份
+      <select id="identity">
+        <option value="demo-u01">普通用户 U01</option>
+        <option value="demo-m01">管理员 M01</option>
+        <option value="demo-m02">管理员 M02</option>
+      </select>
+    </label>
+    <button class="primary" id="refresh">刷新真实状态</button>
+  </div>
+</header>
+<main>
+  <section class="card wide" id="create-panel">
+    <h2>创建采购草稿</h2>
+    <form id="create-form" class="form-grid">
+      <label>申请编号<input name="request_id" required></label>
+      <label>物品<input name="item" value="显示器" required></label>
+      <label>数量<input name="quantity" type="number" min="1" value="2" required></label>
+      <label>采购用途<input name="purpose" value="市场部办公使用" required></label>
+      <button class="primary" type="submit">创建草稿</button>
+    </form>
+  </section>
+  <section class="card"><h2>采购申请</h2><div id="requests"></div></section>
+  <section class="card"><h2>申请详情</h2><div id="detail" class="empty">请选择一张申请。</div></section>
+  <section class="card wide" id="product-panel">
+    <h2>商品目录</h2>
+    <div class="toolbar">
+      <input id="product-query" placeholder="搜索编码、名称、分类、品牌型号或规格" style="max-width:360px;margin:0">
+      <select id="product-status"><option value="all">全部状态</option><option value="active">已启用</option><option value="inactive">已停用</option></select>
+      <button id="product-search">搜索</button>
+    </div>
+    <div id="products" style="margin-top:12px"></div>
+    <form id="product-form" class="form-grid" style="margin-top:18px" hidden>
+      <label>商品编码<input name="code" required></label>
+      <label>名称<input name="name" required></label>
+      <label>分类<input name="category" required></label>
+      <label>品牌/型号<input name="brand_model" required></label>
+      <label>规格<input name="specification" required></label>
+      <label>单位<input name="unit" required></label>
+      <label>采购价（元）<input name="reference_price" type="number" min="0.01" step="0.01" required></label>
+      <label>采购供应商<input name="supplier_name" value="新锐科技" required></label>
+      <label>状态<select name="status"><option value="active">启用</option><option value="inactive">停用</option></select></label>
+      <button class="primary" type="submit">保存商品</button><button id="product-cancel" type="button">取消编辑</button>
+    </form>
+  </section>
+  <section class="card wide" id="admin-panel" hidden>
+    <h2>管理员业务状态</h2>
+    <div id="reviews"></div>
+    <h3 style="margin-top:18px">预算</h3><div id="budgets"></div>
+    <form id="budget-form" class="form-grid" style="margin-top:12px" hidden>
+      <label>预算科目<input name="id" required></label><label>余额（元）<input name="balance" type="number" min="0" step="0.01" required></label>
+      <button class="primary" type="submit">保存预算</button><button id="budget-cancel" type="button">取消编辑</button>
+    </form>
+    <h3 style="margin-top:18px">供应商</h3><div id="suppliers"></div>
+    <form id="supplier-form" class="form-grid" style="margin-top:12px" hidden>
+      <label>供应商 ID<input name="id" required></label><label>名称<input name="name" required></label>
+      <label>状态<select name="status"><option value="new">待准入</option><option value="active">已准入</option><option value="blacklisted">黑名单</option></select></label>
+      <button class="primary" type="submit">保存供应商</button><button id="supplier-cancel" type="button">取消编辑</button>
+    </form>
+    <h3 style="margin-top:18px">采购订单</h3><div id="pos"></div>
+  </section>
+  <section class="card wide"><div id="notice"></div><div class="muted">页面数据均来自当前 SQLite 业务接口；本服务仅监听 127.0.0.1，请勿转发到公网。</div></section>
+</main>
+<script>
+const $=id=>document.getElementById(id), esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let current=null, overview=null, productRows=[];
+function token(){return $('identity').value} function isAdmin(){return token()!=='demo-u01'} function isM02(){return token()==='demo-m02'}
+async function api(path,method='GET',body){
+  const response=await fetch(path,{method,headers:{Authorization:'Bearer '+token(),'Content-Type':'application/json'},body:body?JSON.stringify(body):undefined});
+  const data=await response.json(); if(!response.ok)throw new Error(data.error_code||('HTTP '+response.status)); return data;
+}
+function notice(message,error=false){$('notice').textContent=message;$('notice').className=error?'error':''}
+function requestHtml(r){
+  const canSubmit=!isAdmin()&&['DRAFT','NEED_INFO','REAPPROVAL_REQUIRED'].includes(r.state);
+  const canPo=!isAdmin()&&r.state==='APPROVED';
+  const canApprove=isAdmin()&&((token()==='demo-m01'&&r.approval.current_approver==='M01')||(token()==='demo-m02'&&r.approval.current_approver==='M02'))&&['SUBMITTED','PENDING_HIGH_APPROVAL'].includes(r.state);
+  const evidence=isAdmin()&&r.approval.required_approver==='M02'&&!r.approval.evidence_verified&&r.state==='PENDING_HIGH_APPROVAL';
+  return `<div class="request"><div class="request-head"><div><strong>${esc(r.request_id)}</strong> <span class="pill">${esc(r.state)}</span><div class="muted">${esc(r.item||'未填写')} · v${esc(r.version)} · ${esc(r.supplier?.name||'未匹配供应商')}</div></div><div class="amount">¥${esc(r.amount)}</div></div><div class="actions" style="margin-top:9px"><button data-view="${esc(r.request_id)}">查看详情</button>${canSubmit?`<button data-submit="${esc(r.request_id)}">正式提交</button>`:''}${evidence?`<button data-evidence="${esc(r.request_id)}">核验凭证</button>`:''}${canApprove?`<button class="primary" data-approve="${esc(r.request_id)}" data-version="${esc(r.version)}">人工批准</button>`:''}${canPo?`<button class="primary" data-po="${esc(r.request_id)}" data-version="${esc(r.version)}">创建 PO</button>`:''}</div></div>`;
+}
+function table(headers,rows){return rows.length?`<table><thead><tr>${headers.map(x=>`<th>${esc(x)}</th>`).join('')}</tr></thead><tbody>${rows.map(row=>`<tr>${row.map(x=>`<td>${esc(x)}</td>`).join('')}</tr>`).join('')}</tbody></table>`:'<div class="empty">暂无记录</div>'}
+async function loadProducts(){
+  const params=new URLSearchParams({query:$('product-query').value.trim(),status:$('product-status').value});
+  const data=await api('/products?'+params);productRows=data.products;
+  const actions=p=>isM02()?`<button data-product-edit="${esc(p.code)}">编辑</button><button data-product-status="${esc(p.code)}" data-next-status="${p.status==='active'?'inactive':'active'}">${p.status==='active'?'停用':'启用'}</button><button class="danger" data-product-delete="${esc(p.code)}">删除</button>`:'';
+  $('products').innerHTML=productRows.length?`<table><thead><tr><th>编码</th><th>名称</th><th>分类</th><th>品牌/型号</th><th>规格</th><th>单位</th><th>采购价</th><th>采购供应商</th><th>状态</th>${isM02()?'<th>操作</th>':''}</tr></thead><tbody>${productRows.map(p=>`<tr><td>${esc(p.code)}</td><td>${esc(p.name)}</td><td>${esc(p.category)}</td><td>${esc(p.brand_model)}</td><td>${esc(p.specification)}</td><td>${esc(p.unit)}</td><td>¥${esc(p.purchase_price)}</td><td>${esc(p.supplier?.name||'未维护')}</td><td>${esc(p.status)}</td>${isM02()?`<td class="actions">${actions(p)}</td>`:''}</tr>`).join('')}</tbody></table>`:'<div class="empty">没有匹配商品。</div>';
+}
+function resetProductForm(){const form=$('product-form');form.reset();form.dataset.editCode='';form.elements.code.readOnly=false;form.elements.supplier_name.value='新锐科技'}
+function resetSupplierForm(){const form=$('supplier-form');form.reset();form.dataset.editId='';form.elements.id.readOnly=false;form.elements.status.value='new'}
+function resetBudgetForm(){const form=$('budget-form');form.reset();form.dataset.editId='';form.elements.id.readOnly=false}
+async function load(){
+  try{
+    current=null;$('detail').innerHTML='<div class="empty">请选择一张申请。</div>';
+    $('create-panel').hidden=isAdmin();$('admin-panel').hidden=!isAdmin();$('product-panel').hidden=token()==='demo-u01';
+    $('product-form').hidden=!isM02();$('supplier-form').hidden=!isM02();$('budget-form').hidden=!isM02();
+    resetProductForm();resetSupplierForm();resetBudgetForm();
+    const list=await api('/requests');$('requests').innerHTML=list.requests.length?list.requests.map(requestHtml).join(''):'<div class="empty">暂无有权查看的申请。</div>';
+    if(token()!=='demo-u01')await loadProducts();
+    if(isAdmin()){
+      overview=await api('/admin/overview');
+      const pending=overview.vendor_reviews.filter(x=>x.status==='PENDING');
+      $('reviews').innerHTML='<h3>新供应商准入待办</h3>'+(pending.length?pending.map(x=>`<div class="request"><strong>#${esc(x.id)} ${esc(x.supplier_id)}</strong> · 申请 ${esc(x.request_id)} <span class="actions"><button class="primary" data-review="${esc(x.id)}" data-decision="APPROVED">批准准入</button><button class="danger" data-review="${esc(x.id)}" data-decision="REJECTED">拒绝</button></span></div>`).join(''):'<div class="empty">暂无待办</div>');
+      $('budgets').innerHTML=overview.budgets.length?`<table><thead><tr><th>预算科目</th><th>余额（元）</th>${isM02()?'<th>操作</th>':''}</tr></thead><tbody>${overview.budgets.map(x=>`<tr><td>${esc(x.id)}</td><td>¥${esc(x.balance)}</td>${isM02()?`<td class="actions"><button data-budget-edit="${esc(x.id)}">编辑</button><button class="danger" data-budget-delete="${esc(x.id)}">删除</button></td>`:''}</tr>`).join('')}</tbody></table>`:'<div class="empty">暂无预算</div>';
+      $('suppliers').innerHTML=overview.suppliers.length?`<table><thead><tr><th>ID</th><th>名称</th><th>状态</th>${isM02()?'<th>操作</th>':''}</tr></thead><tbody>${overview.suppliers.map(x=>`<tr><td>${esc(x.id)}</td><td>${esc(x.name)}</td><td>${esc(x.status)}</td>${isM02()?`<td class="actions"><button data-supplier-edit="${esc(x.id)}">编辑</button><button class="danger" data-supplier-delete="${esc(x.id)}">删除</button></td>`:''}</tr>`).join('')}</tbody></table>`:'<div class="empty">暂无供应商</div>';
+      $('pos').innerHTML=table(['PO','申请','版本','金额','幂等键'],overview.purchase_orders.map(x=>[x.po_id,x.request_id,x.version,'¥'+x.amount,x.idempotency_key]));
+    }
+    notice('已读取数据库当前状态。');
+  }catch(e){notice(e.message,true)}
+}
+async function view(id){try{current=await api('/requests/'+encodeURIComponent(id));const r=current;$('detail').innerHTML=`<h3>${esc(r.request_id)} <span class="pill">${esc(r.state)}</span></h3><div class="kv"><div>申请人 / 部门</div><div>${esc(r.applicant)} / ${esc(r.department)}</div><div>物品</div><div>${esc(r.item||'—')}</div><div>数量 / 单价</div><div>${esc(r.quantity??'—')} / ¥${esc(r.unit_price??'—')}</div><div>金额</div><div>¥${esc(r.amount)} ${esc(r.currency)}</div><div>用途</div><div>${esc(r.purpose||'—')}</div><div>供应商</div><div>${esc(r.supplier?.name||'—')}（${esc(r.supplier?.status||'未匹配')}）</div><div>当前审批人 / 最终级别</div><div>${esc(r.approval.current_approver||'无待审批节点')} / ${esc(r.approval.required_approver)}；最终批准人 ${esc(r.approval.approved_by||'未批准')} / 凭证${r.approval.evidence_verified?'已核验':'未核验'}</div><div>PO</div><div>${esc(r.po?.po_id||'尚未创建')}</div></div>`}catch(e){notice(e.message,true)}}
+document.addEventListener('click',async event=>{
+  const b=event.target.closest('button');if(!b)return;
+  try{
+    if(b.dataset.view)await view(b.dataset.view);
+    if(b.dataset.submit){await api(`/requests/${encodeURIComponent(b.dataset.submit)}/submit`,'POST',{});await load()}
+    if(b.dataset.evidence){await api(`/requests/${encodeURIComponent(b.dataset.evidence)}/evidence`,'POST',{});await load()}
+    if(b.dataset.approve){await api(`/requests/${encodeURIComponent(b.dataset.approve)}/approve`,'POST',{expected_version:Number(b.dataset.version)});await load()}
+    if(b.dataset.po){await api(`/requests/${encodeURIComponent(b.dataset.po)}/po`,'POST',{idempotency_key:`UI-${b.dataset.po}-v${b.dataset.version}`});await load()}
+    if(b.dataset.review){await api(`/admin/vendor-reviews/${b.dataset.review}/decision`,'POST',{decision:b.dataset.decision});await load()}
+    if(b.dataset.productEdit){const p=productRows.find(x=>x.code===b.dataset.productEdit),form=$('product-form');for(const key of ['code','name','category','brand_model','specification','unit','reference_price','status'])form.elements[key].value=p[key]??'';form.elements.supplier_name.value=p.supplier?.name||'新锐科技';form.dataset.editCode=p.code;form.elements.code.readOnly=true;form.scrollIntoView({behavior:'smooth',block:'center'})}
+    if(b.dataset.productStatus){await api('/admin/products/'+encodeURIComponent(b.dataset.productStatus),'PATCH',{status:b.dataset.nextStatus});await loadProducts()}
+    if(b.dataset.productDelete&&confirm('确认删除商品 '+b.dataset.productDelete+'？')){await api('/admin/products/'+encodeURIComponent(b.dataset.productDelete),'DELETE');await load()}
+    if(b.dataset.supplierEdit){const s=overview.suppliers.find(x=>x.id===b.dataset.supplierEdit),form=$('supplier-form');form.elements.id.value=s.id;form.elements.name.value=s.name;form.elements.status.value=s.status;form.dataset.editId=s.id;form.elements.id.readOnly=true}
+    if(b.dataset.supplierDelete&&confirm('确认删除供应商 '+b.dataset.supplierDelete+'？')){await api('/admin/suppliers/'+encodeURIComponent(b.dataset.supplierDelete),'DELETE');await load()}
+    if(b.dataset.budgetEdit){const x=overview.budgets.find(x=>x.id===b.dataset.budgetEdit),form=$('budget-form');form.elements.id.value=x.id;form.elements.balance.value=x.balance;form.dataset.editId=x.id;form.elements.id.readOnly=true}
+    if(b.dataset.budgetDelete&&confirm('确认删除预算 '+b.dataset.budgetDelete+'？')){await api('/admin/budgets/'+encodeURIComponent(b.dataset.budgetDelete),'DELETE');await load()}
+  }catch(e){notice(e.message,true)}
+});
+$('create-form').addEventListener('submit',async event=>{event.preventDefault();const f=new FormData(event.target);try{await api('/requests','POST',{request_id:f.get('request_id'),item:f.get('item'),quantity:Number(f.get('quantity')),purpose:f.get('purpose')});await load()}catch(e){notice(e.message+'；目录数据缺失时请联系采购负责人维护。',true)}});
+$('product-form').addEventListener('submit',async event=>{event.preventDefault();const form=event.target,f=new FormData(form),payload={name:f.get('name'),category:f.get('category'),brand_model:f.get('brand_model'),specification:f.get('specification'),unit:f.get('unit'),reference_price:f.get('reference_price'),status:f.get('status'),supplier_name:f.get('supplier_name').trim()};try{if(form.dataset.editCode){await api('/admin/products/'+encodeURIComponent(form.dataset.editCode),'PATCH',payload)}else{payload.code=f.get('code');await api('/admin/products','POST',payload)}resetProductForm();await loadProducts();notice('商品已保存，采购价将用于新申请。')}catch(e){notice(e.message,true)}});
+$('supplier-form').addEventListener('submit',async event=>{event.preventDefault();const form=event.target,f=new FormData(form);try{if(form.dataset.editId){await api('/admin/suppliers/'+encodeURIComponent(form.dataset.editId),'PATCH',{name:f.get('name'),status:f.get('status')})}else{await api('/admin/suppliers','POST',{id:f.get('id'),name:f.get('name')})}resetSupplierForm();await load();notice('供应商已保存。')}catch(e){notice(e.message,true)}});
+$('budget-form').addEventListener('submit',async event=>{event.preventDefault();const form=event.target,f=new FormData(form);try{if(form.dataset.editId){await api('/admin/budgets/'+encodeURIComponent(form.dataset.editId),'PATCH',{balance:f.get('balance')})}else{await api('/admin/budgets','POST',{id:f.get('id'),balance:f.get('balance')})}resetBudgetForm();await load();notice('预算已保存。')}catch(e){notice(e.message,true)}});
+$('product-search').addEventListener('click',()=>loadProducts().catch(e=>notice(e.message,true)));$('product-cancel').addEventListener('click',resetProductForm);
+$('supplier-cancel').addEventListener('click',resetSupplierForm);$('budget-cancel').addEventListener('click',resetBudgetForm);
+$('identity').addEventListener('change',load);$('refresh').addEventListener('click',load);
+$('create-form').elements.request_id.value='DEMO-'+Date.now();load();
+</script>
+</body>
+</html>

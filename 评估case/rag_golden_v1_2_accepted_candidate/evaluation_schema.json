@@ -1,0 +1,428 @@
+{
+  "type": "object",
+  "properties": {
+    "case_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "scenario_type": {
+      "enum": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "knowledge_type": {
+      "enum": [
+        "A",
+        "B",
+        "MIXED"
+      ]
+    },
+    "theme": {
+      "type": "string",
+      "minLength": 1
+    },
+    "attributes": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "direct",
+          "colloquial",
+          "implicit_condition",
+          "numeric_boundary",
+          "distracting_context",
+          "conditions_exceptions",
+          "partial_evidence",
+          "unanswerable",
+          "similar_knowledge"
+        ]
+      },
+      "minItems": 1
+    },
+    "question": {
+      "type": "string",
+      "minLength": 1
+    },
+    "golden_answer": {
+      "type": "string",
+      "minLength": 1
+    },
+    "required_facts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "fact_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "text": {
+            "type": "string",
+            "minLength": 1
+          },
+          "evidence_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "minItems": 1
+          },
+          "required_judgment": {
+            "type": "string",
+            "minLength": 1
+          },
+          "source_class": {
+            "enum": [
+              "A",
+              "B"
+            ]
+          },
+          "authority": {
+            "type": "string",
+            "minLength": 1
+          },
+          "evaluation_role": {
+            "enum": [
+              "REQUIRED",
+              "SUPPLEMENTARY"
+            ]
+          }
+        },
+        "required": [
+          "fact_id",
+          "text",
+          "evidence_ids",
+          "required_judgment",
+          "source_class",
+          "authority",
+          "evaluation_role"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 1
+    },
+    "golden_evidence": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "evidence_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "doc_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1
+          },
+          "section": {
+            "type": "string",
+            "minLength": 1
+          },
+          "knowledge_unit_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "source_path": {
+            "type": "string",
+            "minLength": 1
+          },
+          "evidence_text": {
+            "type": "string",
+            "minLength": 1
+          },
+          "source_hash": {
+            "type": "string",
+            "minLength": 1
+          },
+          "evidence_hash": {
+            "type": "string",
+            "minLength": 1
+          },
+          "fact_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "role": {
+            "enum": [
+              "fact",
+              "scope"
+            ]
+          },
+          "source_class": {
+            "enum": [
+              "A",
+              "B"
+            ]
+          },
+          "source_span": {
+            "type": "object",
+            "properties": {
+              "char_start": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "char_end": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "line_start": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "line_end": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "convention": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "char_start",
+              "char_end",
+              "line_start",
+              "line_end",
+              "convention"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "evidence_id",
+          "doc_id",
+          "title",
+          "section",
+          "knowledge_unit_id",
+          "source_path",
+          "evidence_text",
+          "source_hash",
+          "evidence_hash",
+          "fact_id",
+          "role",
+          "source_class",
+          "source_span"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 2
+    },
+    "forbidden_claims": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 1
+    },
+    "answerability": {
+      "enum": [
+        "FULL",
+        "PARTIAL",
+        "UNANSWERABLE"
+      ]
+    },
+    "expected_behavior": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 1
+    },
+    "question_conditions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "question_text": {
+            "type": "string",
+            "minLength": 1
+          },
+          "fact_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "minItems": 1
+          },
+          "treatment": {
+            "const": "source_supported_judgment"
+          }
+        },
+        "required": [
+          "question_text",
+          "fact_ids",
+          "treatment"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 1
+    },
+    "missing_information": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 0
+    },
+    "cross_document_reason": {
+      "type": "string"
+    },
+    "fixture": {
+      "type": "null"
+    },
+    "real_time_dependency": {
+      "const": false
+    },
+    "gold_status": {
+      "enum": [
+        "AUTO_VALIDATED",
+        "SKIPPED",
+        "NEEDS_DECISION"
+      ]
+    },
+    "case_version": {
+      "const": "rag-golden-1.2.1-accepted-candidate"
+    },
+    "provenance": {
+      "type": "object",
+      "properties": {
+        "blueprint_sha256": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source": {
+          "type": "string",
+          "minLength": 1
+        },
+        "overview_path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "overview_sha256": {
+          "type": "string",
+          "minLength": 1
+        },
+        "construction": {
+          "type": "string",
+          "minLength": 1
+        },
+        "semantic_review": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "blueprint_sha256",
+        "source",
+        "overview_path",
+        "overview_sha256",
+        "construction",
+        "semantic_review"
+      ],
+      "additionalProperties": false
+    },
+    "checker_spec": {
+      "type": "object",
+      "required": [
+        "source_evidence_coverage",
+        "answer_correctness",
+        "top_k_necessary_evidence_recall",
+        "cross_document_fact_coverage"
+      ]
+    },
+    "answer_key_points": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "point_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "criterion": {
+            "type": "string",
+            "minLength": 1
+          },
+          "fact_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1
+          },
+          "scoring_role": {
+            "enum": [
+              "REQUIRED",
+              "OPTIONAL"
+            ]
+          }
+        },
+        "required": [
+          "point_id",
+          "criterion",
+          "fact_ids",
+          "scoring_role"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 1
+    },
+    "editorial_review": {
+      "type": "object"
+    },
+    "quality_repair": {
+      "type": "object"
+    },
+    "source_necessity_review": {
+      "type": "object"
+    },
+    "acceptance_review": {
+      "type": "object"
+    },
+    "answerability_note": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "case_id",
+    "scenario_type",
+    "knowledge_type",
+    "theme",
+    "attributes",
+    "question",
+    "golden_answer",
+    "required_facts",
+    "golden_evidence",
+    "forbidden_claims",
+    "answerability",
+    "expected_behavior",
+    "question_conditions",
+    "missing_information",
+    "cross_document_reason",
+    "fixture",
+    "real_time_dependency",
+    "gold_status",
+    "case_version",
+    "provenance",
+    "checker_spec",
+    "answer_key_points",
+    "acceptance_review"
+  ],
+  "additionalProperties": false,
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Procurement RAG Golden v1.2.1 independent accepted candidate",
+  "$comment": "原文证据独立于索引；来源目录的SUPPLEMENTARY事实不参与必要召回。跨字段引用、哈希及角色一致性由accept_golden_v12验证。"
+}

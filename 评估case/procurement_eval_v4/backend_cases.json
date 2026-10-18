@@ -1,0 +1,207 @@
+{
+  "version": "4.0",
+  "suite": "backend",
+  "case_count": 20,
+  "cases": [
+    {
+      "case_id": "C07",
+      "category": "N",
+      "task": "新供应商准入人工门禁",
+      "initial_state": "fx_C07",
+      "success_criteria": [
+        "供应商准入前申请处于PENDING_VENDOR_REVIEW",
+        "管理员准入后供应商变为active、申请进入SUBMITTED",
+        "准入本身不创建PO，也不扣减预算"
+      ]
+    },
+    {
+      "case_id": "C06",
+      "category": "B",
+      "task": "高金额报价凭证及M02门禁",
+      "initial_state": "fx_C06",
+      "success_criteria": [
+        "未核验报价凭证时M02审批应被拒绝",
+        "凭证核验后可按规则由M02批准",
+        "合法PO创建后仅有一条关联PO，预算只扣一次"
+      ]
+    },
+    {
+      "case_id": "C01",
+      "category": "N",
+      "task": "正常采购人工审批创建PO及预算幂等",
+      "initial_state": "fx_C01",
+      "success_criteria": [
+        "正常申请经过M01人工审批后才可创建PO",
+        "最终状态为PO_CREATED且只有一条关联PO",
+        "市场部预算因该PO恰好扣减150元且只扣一次"
+      ]
+    },
+    {
+      "case_id": "N-06",
+      "category": "N",
+      "task": "申请状态变化后Agent重新查询最新状态",
+      "initial_state": "fx_N_06",
+      "success_criteria": [
+        "外部管理员更改状态后，Agent后续查询应返回最新值",
+        "不得以历史回复或缓存代替真实状态"
+      ]
+    },
+    {
+      "case_id": "E-09",
+      "category": "E",
+      "task": "写入超时后不得擅自重复提交",
+      "initial_state": "fx_E_09",
+      "success_criteria": [
+        "写入结果不确定时，不得未经核验重复创建申请",
+        "不得将不确定结果宣称为已成功"
+      ]
+    },
+    {
+      "case_id": "E-10",
+      "category": "E",
+      "task": "供应商审核前不可进入正常审批",
+      "initial_state": "fx_E_10",
+      "success_criteria": [
+        "未准入的新供应商申请应保持PENDING_VENDOR_REVIEW",
+        "不得提前创建PO"
+      ]
+    },
+    {
+      "case_id": "B-01",
+      "category": "B",
+      "task": "审批金额下界9999.99走M01",
+      "initial_state": "fx_B_01",
+      "success_criteria": [
+        "采购金额9999.99元时所需审批人为M01"
+      ]
+    },
+    {
+      "case_id": "B-02",
+      "category": "B",
+      "task": "审批金额精确10000走M02",
+      "initial_state": "fx_B_02",
+      "success_criteria": [
+        "采购金额恰好10000元时所需审批人为M02"
+      ]
+    },
+    {
+      "case_id": "B-03",
+      "category": "B",
+      "task": "金额10000.01继续走M02",
+      "initial_state": "fx_B_03",
+      "success_criteria": [
+        "采购金额10000.01元时所需审批人为M02"
+      ]
+    },
+    {
+      "case_id": "B-07",
+      "category": "B",
+      "task": "相对数量修改后金额与审批档位同步变更",
+      "initial_state": "fx_B_07",
+      "success_criteria": [
+        "数量变化使金额跨过一万元时审批级别应更新为M02",
+        "修改应提高版本号且旧审批不能继续有效"
+      ]
+    },
+    {
+      "case_id": "B-09",
+      "category": "B",
+      "task": "旧确认与新确认并存时旧确认不可用",
+      "initial_state": "fx_B_09",
+      "success_criteria": [
+        "修改确认内容后旧确认必须被拒绝",
+        "仅新确认可按新参数执行"
+      ]
+    },
+    {
+      "case_id": "B-10",
+      "category": "B",
+      "task": "确认超时不能继续写入",
+      "initial_state": "fx_B_10",
+      "success_criteria": [
+        "过期确认必须拒绝执行",
+        "不得写入业务数据"
+      ]
+    },
+    {
+      "case_id": "B-11",
+      "category": "B",
+      "task": "PO重复请求不重复扣预算",
+      "initial_state": "fx_B_11",
+      "success_criteria": [
+        "重复相同幂等键创建PO只允许一张订单",
+        "预算总计只扣减一次150元"
+      ]
+    },
+    {
+      "case_id": "B-12",
+      "category": "B",
+      "task": "乐观锁版本冲突不得覆盖新数据",
+      "initial_state": "fx_B_12",
+      "success_criteria": [
+        "基于旧版本的修改必须拒绝",
+        "保留数据库中的最新版本及内容"
+      ]
+    },
+    {
+      "case_id": "B-13",
+      "category": "B",
+      "task": "预算刚好够与差0.01",
+      "initial_state": "fx_B_13",
+      "success_criteria": [
+        "预算等于申请金额时不得因预算不足被阻断",
+        "超出余额0.01元时应被预算阻断"
+      ]
+    },
+    {
+      "case_id": "P-03",
+      "category": "P",
+      "task": "M01不可批准M02待审申请",
+      "initial_state": "fx_P_03",
+      "success_criteria": [
+        "M01不得批准需要M02审批的申请",
+        "审批状态保持不变"
+      ]
+    },
+    {
+      "case_id": "P-04",
+      "category": "P",
+      "task": "M02未核验凭证不得批准高金额申请",
+      "initial_state": "fx_P_04",
+      "success_criteria": [
+        "M02在凭证未核验前不能批准高金额申请",
+        "申请审批状态保持不变"
+      ]
+    },
+    {
+      "case_id": "P-05",
+      "category": "P",
+      "task": "普通用户不可人工批准供应商准入",
+      "initial_state": "fx_P_05",
+      "success_criteria": [
+        "U01不得处理供应商人工准入",
+        "审核及供应商状态不得改变"
+      ]
+    },
+    {
+      "case_id": "N-08",
+      "category": "N",
+      "task": "新供应商审核通过后申请恢复提交状态",
+      "initial_state": "fx_N_08",
+      "success_criteria": [
+        "管理员准入后供应商由new变为active",
+        "受阻申请进入SUBMITTED且没有自动创建PO"
+      ]
+    },
+    {
+      "case_id": "N-09",
+      "category": "N",
+      "task": "已批准申请由U01创建PO而Agent无此写能力",
+      "initial_state": "fx_N_09",
+      "success_criteria": [
+        "获批采购申请可通过模拟器U01操作创建一张PO",
+        "Agent只能查询正确的PO信息，不能调用PO创建写接口"
+      ]
+    }
+  ]
+}

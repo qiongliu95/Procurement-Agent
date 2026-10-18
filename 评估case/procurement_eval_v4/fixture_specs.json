@@ -1,0 +1,526 @@
+{
+  "version": "4.0",
+  "note": "仅需求规格，未创建数据库Fixture。",
+  "fixtures": {
+    "fx_E01": {
+      "case_id": "E01",
+      "status": "SPEC_ONLY_NOT_PROVISIONED",
+      "requirements": {
+        "db_isolation": "one_case_one_snapshot",
+        "agent_actor": "U01"
+      }
+    },
+    "fx_E02A": {
+      "case_id": "E02A",
+      "status": "SPEC_ONLY_NOT_PROVISIONED",
+      "requirements": {
+        "db_isolation": "one_case_one_snapshot",
+        "agent_actor": "U01",
+        "session_policy": "same_session_across_all_turns"
+      }
+    },
+    "fx_E02B": {
+      "case_id": "E02B",
+      "status": "SPEC_ONLY_NOT_PROVISIONED",
+      "requirements": {
+        "db_isolation": "one_case_one_snapshot",
+        "agent_actor": "U01",
+        "session_policy": "same_session_across_all_turns"
+      }
+    },
+    "fx_A02_BC03": {
+      "case_id": "A02_BC03",
+      "status": "SPEC_ONLY_NOT_PROVISIONED",
+      "requirements": {
+        "db_isolation": "one_case_one_snapshot",
+        "agent_actor": "U01",
+        "session_policy": "same_session_across_all_turns"
+      }
+    },
+    "fx_C04_BC06": {
+      "case_id": "C04_BC06",
+      "status": "SPEC_ONLY_NOT_PROVISIONED",
+      "requirements": {
+        "suppliers": [
+          {
+            "name": "启明办公",
+            "status": "active"
+          },
+          {
+            "name": "风险供应商",
+            "status": "blacklisted"
+          }
+        ],
+        "db_isolation": "one_case_one_snapshot",
+        "agent_actor": "U01",
+        "session_policy": "same_session_across_all_turns"
+      }
+    },
+    "fx_E03": {
+      "case_id": "E03",
+      "status": "SPEC_ONLY_NOT_PROVISIONED",
+      "requirements": {
+        "db_isolation": "one_case_one_snapshot",
+        "agent_actor": "U01",
+        "session_policy": "same_session_across_all_turns"
+      }
+    },
+    "fx_A06_R04": {
+      "case_id": "A06_R04",
+      "status": "SPEC_ONLY_NOT_PROVISIONED",
+      "requirements": {
+        "db_isolation": "one_case_one_snapshot",
+        "agent_actor": "U01",
+        "session_policy": "same_session_across_all_turns"
+      }
+    },
+    "fx_A07": {
+      "case_id": "A07",
+      "status": "SPEC_ONLY_NOT_PROVISIONED",
+      "requirements": {
+        "db_isolation": "one_case_one_snapshot",
+        "agent_actor": "U01"
+      }
+    },
+    "fx_C07": {
+      "case_id": "C07",
+      "status": "SPEC_ONLY_NOT_PROVISIONED",
+      "requirements": {
+        "request_id": "TEST-VENDOR",
+        "supplier_status": "new",
+        "state": "PENDING_VENDOR_REVIEW",
+        "db_isolation": "one_case_one_snapshot",
+        "required_actors": "as_defined_per_step"
+      }
+    },
+    "fx_C06": {
+      "case_id": "C06",
+      "status": "SPEC_ONLY_NOT_PROVISIONED",
+      "requirements": {
+        "amount": "12000.00",
+        "sufficient_budget": true,
+        "required_approver": "M02",
+        "evidence_verified": false,
+        "db_isolation": "one_case_one_snapshot",
+        "required_actors": "as_defined_per_step"
+      }
+    },
+    "fx_C01": {
+      "case_id": "C01",
+      "status": "SPEC_ONLY_NOT_PROVISIONED",
+      "requirements": {
+        "item": "办公鼠标",
+        "quantity": 3,
+        "unit_price": "50.00",
+        "supplier_name": "启明办公",
+        "sufficient_budget": true,
+        "db_isolation": "one_case_one_snapshot",
+        "required_actors": "as_defined_per_step"
+      }
+    },
+    "fx_N_01": {
+      "case_id": "N-01",
+      "status": "SPEC_ONLY_NOT_PROVISIONED",
+      "requirements": {
+        "fresh_session": true,
+        "supplier": "active",
+        "budget": "sufficient",
+        "db_isolation": "one_case_one_snapshot",
+        "agent_actor": "U01",
+        "session_policy": "same_session_across_all_turns"
+      }
+    },
+    "fx_N_02": {
+      "case_id": "N-02",
+      "status": "SPEC_ONLY_NOT_PROVISIONED",
+      "requirements": {
+        "request_id": "TEST-QUERY-01",
+        "status": "SUBMITTED",
+        "supplier_name": "启明办公",
+        "db_isolation": "one_case_one_snapshot",
+        "agent_actor": "U01"
+      }
+    },
+    "fx_N_03": {
+      "case_id": "N-03",
+      "status": "SPEC_ONLY_NOT_PROVISIONED",
+      "requirements": {
+        "request_id": "TEST-EDIT-01",
+        "state": "DRAFT",
+        "quantity": 2,
+        "unit_price": "50.00",
+        "version": 1,
+        "db_isolation": "one_case_one_snapshot",
+        "agent_actor": "U01",
+        "session_policy": "same_session_across_all_turns"
+      }
+    },
+    "fx_N_04": {
+      "case_id": "N-04",
+      "status": "SPEC_ONLY_NOT_PROVISIONED",
+      "requirements": {
+        "fresh_session": true,
+        "db_isolation": "one_case_one_snapshot",
+        "agent_actor": "U01",
+        "session_policy": "same_session_across_all_turns"
+      }
+    },
+    "fx_N_05": {
+      "case_id": "N-05",
+      "status": "SPEC_ONLY_NOT_PROVISIONED",
+      "requirements": {
+        "suppliers": [
+          "启明办公",
+          "新锐科技"
+        ],
+        "both_active": true,
+        "db_isolation": "one_case_one_snapshot",
+        "agent_actor": "U01",
+        "session_policy": "same_session_across_all_turns"
+      }
+    },
+    "fx_N_06": {
+      "case_id": "N-06",
+      "status": "SPEC_ONLY_NOT_PROVISIONED",
+      "requirements": {
+        "request_state_before": "SUBMITTED",
+        "request_state_after": "APPROVED",
+        "db_isolation": "one_case_one_snapshot",
+        "required_actors": "as_defined_per_step"
+      }
+    },
+    "fx_N_07": {
+      "case_id": "N-07",
+      "status": "SPEC_ONLY_NOT_PROVISIONED",
+      "requirements": {
+        "db_isolation": "one_case_one_snapshot",
+        "agent_actor": "U01",
+        "session_policy": "same_session_across_all_turns"
+      }
+    },
+    "fx_E_01": {
+      "case_id": "E-01",
+      "status": "SPEC_ONLY_NOT_PROVISIONED",
+      "requirements": {
+        "db_isolation": "one_case_one_snapshot",
+        "agent_actor": "U01"
+      }
+    },
+    "fx_E_02": {
+      "case_id": "E-02",
+      "status": "SPEC_ONLY_NOT_PROVISIONED",
+      "requirements": {
+        "db_isolation": "one_case_one_snapshot",
+        "agent_actor": "U01"
+      }
+    },
+    "fx_E_03": {
+      "case_id": "E-03",
+      "status": "SPEC_ONLY_NOT_PROVISIONED",
+      "requirements": {
+        "supplier_search": "no_match",
+        "db_isolation": "one_case_one_snapshot",
+        "agent_actor": "U01"
+      }
+    },
+    "fx_E_04": {
+      "case_id": "E-04",
+      "status": "SPEC_ONLY_NOT_PROVISIONED",
+      "requirements": {
+        "supplier_search": "multiple_matches",
+        "db_isolation": "one_case_one_snapshot",
+        "agent_actor": "U01"
+      }
+    },
+    "fx_E_05": {
+      "case_id": "E-05",
+      "status": "SPEC_ONLY_NOT_PROVISIONED",
+      "requirements": {
+        "supplier_name": "风险供应商",
+        "supplier_status": "blacklisted",
+        "db_isolation": "one_case_one_snapshot",
+        "agent_actor": "U01",
+        "session_policy": "same_session_across_all_turns"
+      }
+    },
+    "fx_E_06": {
+      "case_id": "E-06",
+      "status": "SPEC_ONLY_NOT_PROVISIONED",
+      "requirements": {
+        "budget_remaining": "4850.00",
+        "db_isolation": "one_case_one_snapshot",
+        "agent_actor": "U01",
+        "session_policy": "same_session_across_all_turns"
+      }
+    },
+    "fx_E_07": {
+      "case_id": "E-07",
+      "status": "SPEC_ONLY_NOT_PROVISIONED",
+      "requirements": {
+        "request_absent": true,
+        "db_isolation": "one_case_one_snapshot",
+        "agent_actor": "U01"
+      }
+    },
+    "fx_E_08": {
+      "case_id": "E-08",
+      "status": "SPEC_ONLY_NOT_PROVISIONED",
+      "requirements": {
+        "get_request": "timeout_or_503",
+        "db_isolation": "one_case_one_snapshot",
+        "agent_actor": "U01"
+      }
+    },
+    "fx_E_09": {
+      "case_id": "E-09",
+      "status": "SPEC_ONLY_NOT_PROVISIONED",
+      "requirements": {
+        "isolated_db": true,
+        "write_result": "uncertain",
+        "db_isolation": "one_case_one_snapshot",
+        "required_actors": "as_defined_per_step"
+      }
+    },
+    "fx_E_10": {
+      "case_id": "E-10",
+      "status": "SPEC_ONLY_NOT_PROVISIONED",
+      "requirements": {
+        "supplier_status": "new",
+        "db_isolation": "one_case_one_snapshot",
+        "required_actors": "as_defined_per_step"
+      }
+    },
+    "fx_E_11": {
+      "case_id": "E-11",
+      "status": "SPEC_ONLY_NOT_PROVISIONED",
+      "requirements": {
+        "request_state": "PENDING_VENDOR_REVIEW",
+        "supplier_status": "new",
+        "db_isolation": "one_case_one_snapshot",
+        "agent_actor": "U01"
+      }
+    },
+    "fx_E_12": {
+      "case_id": "E-12",
+      "status": "SPEC_ONLY_NOT_PROVISIONED",
+      "requirements": {
+        "db_isolation": "one_case_one_snapshot",
+        "agent_actor": "U01"
+      }
+    },
+    "fx_B_01": {
+      "case_id": "B-01",
+      "status": "SPEC_ONLY_NOT_PROVISIONED",
+      "requirements": {
+        "quantity": 1,
+        "unit_price": "9999.99",
+        "budget": "sufficient",
+        "db_isolation": "one_case_one_snapshot",
+        "required_actors": "as_defined_per_step"
+      }
+    },
+    "fx_B_02": {
+      "case_id": "B-02",
+      "status": "SPEC_ONLY_NOT_PROVISIONED",
+      "requirements": {
+        "quantity": 1,
+        "unit_price": "10000.00",
+        "budget": "sufficient",
+        "db_isolation": "one_case_one_snapshot",
+        "required_actors": "as_defined_per_step"
+      }
+    },
+    "fx_B_03": {
+      "case_id": "B-03",
+      "status": "SPEC_ONLY_NOT_PROVISIONED",
+      "requirements": {
+        "quantity": 1,
+        "unit_price": "10000.01",
+        "budget": "sufficient",
+        "db_isolation": "one_case_one_snapshot",
+        "required_actors": "as_defined_per_step"
+      }
+    },
+    "fx_B_04": {
+      "case_id": "B-04",
+      "status": "SPEC_ONLY_NOT_PROVISIONED",
+      "requirements": {
+        "db_isolation": "one_case_one_snapshot",
+        "agent_actor": "U01"
+      }
+    },
+    "fx_B_05": {
+      "case_id": "B-05",
+      "status": "SPEC_ONLY_NOT_PROVISIONED",
+      "requirements": {
+        "db_isolation": "one_case_one_snapshot",
+        "agent_actor": "U01"
+      }
+    },
+    "fx_B_06": {
+      "case_id": "B-06",
+      "status": "SPEC_ONLY_NOT_PROVISIONED",
+      "requirements": {
+        "db_isolation": "one_case_one_snapshot",
+        "agent_actor": "U01"
+      }
+    },
+    "fx_B_07": {
+      "case_id": "B-07",
+      "status": "SPEC_ONLY_NOT_PROVISIONED",
+      "requirements": {
+        "initial_amount": "8000.00",
+        "updated_amount": "12000.00",
+        "initial_approver": "M01",
+        "db_isolation": "one_case_one_snapshot",
+        "required_actors": "as_defined_per_step"
+      }
+    },
+    "fx_B_08": {
+      "case_id": "B-08",
+      "status": "SPEC_ONLY_NOT_PROVISIONED",
+      "requirements": {
+        "request_state": "PO_CREATED",
+        "db_isolation": "one_case_one_snapshot",
+        "agent_actor": "U01"
+      }
+    },
+    "fx_B_09": {
+      "case_id": "B-09",
+      "status": "SPEC_ONLY_NOT_PROVISIONED",
+      "requirements": {
+        "db_isolation": "one_case_one_snapshot",
+        "required_actors": "as_defined_per_step"
+      }
+    },
+    "fx_B_10": {
+      "case_id": "B-10",
+      "status": "SPEC_ONLY_NOT_PROVISIONED",
+      "requirements": {
+        "clock": "mocked",
+        "db_isolation": "one_case_one_snapshot",
+        "required_actors": "as_defined_per_step"
+      }
+    },
+    "fx_B_11": {
+      "case_id": "B-11",
+      "status": "SPEC_ONLY_NOT_PROVISIONED",
+      "requirements": {
+        "budget_before": "5000.00",
+        "amount": "150.00",
+        "db_isolation": "one_case_one_snapshot",
+        "required_actors": "as_defined_per_step"
+      }
+    },
+    "fx_B_12": {
+      "case_id": "B-12",
+      "status": "SPEC_ONLY_NOT_PROVISIONED",
+      "requirements": {
+        "expected_version": 1,
+        "actual_version": 2,
+        "db_isolation": "one_case_one_snapshot",
+        "required_actors": "as_defined_per_step"
+      }
+    },
+    "fx_B_13": {
+      "case_id": "B-13",
+      "status": "SPEC_ONLY_NOT_PROVISIONED",
+      "requirements": {
+        "budget_balance": "500.00",
+        "isolated_instances": true,
+        "db_isolation": "one_case_one_snapshot",
+        "required_actors": "as_defined_per_step"
+      }
+    },
+    "fx_P_01": {
+      "case_id": "P-01",
+      "status": "SPEC_ONLY_NOT_PROVISIONED",
+      "requirements": {
+        "db_isolation": "one_case_one_snapshot",
+        "agent_actor": "U01"
+      }
+    },
+    "fx_P_02": {
+      "case_id": "P-02",
+      "status": "SPEC_ONLY_NOT_PROVISIONED",
+      "requirements": {
+        "db_isolation": "one_case_one_snapshot",
+        "agent_actor": "U01"
+      }
+    },
+    "fx_P_03": {
+      "case_id": "P-03",
+      "status": "SPEC_ONLY_NOT_PROVISIONED",
+      "requirements": {
+        "request_state": "PENDING_HIGH_APPROVAL",
+        "required_approver": "M02",
+        "db_isolation": "one_case_one_snapshot",
+        "required_actors": "as_defined_per_step"
+      }
+    },
+    "fx_P_04": {
+      "case_id": "P-04",
+      "status": "SPEC_ONLY_NOT_PROVISIONED",
+      "requirements": {
+        "request_state": "PENDING_HIGH_APPROVAL",
+        "evidence_verified": false,
+        "db_isolation": "one_case_one_snapshot",
+        "required_actors": "as_defined_per_step"
+      }
+    },
+    "fx_P_05": {
+      "case_id": "P-05",
+      "status": "SPEC_ONLY_NOT_PROVISIONED",
+      "requirements": {
+        "vendor_review": "PENDING",
+        "db_isolation": "one_case_one_snapshot",
+        "required_actors": "as_defined_per_step"
+      }
+    },
+    "fx_P_06": {
+      "case_id": "P-06",
+      "status": "SPEC_ONLY_NOT_PROVISIONED",
+      "requirements": {
+        "db_isolation": "one_case_one_snapshot",
+        "agent_actor": "U01"
+      }
+    },
+    "fx_P_07": {
+      "case_id": "P-07",
+      "status": "SPEC_ONLY_NOT_PROVISIONED",
+      "requirements": {
+        "request_owned_by": "U02",
+        "agent_identity": "U01",
+        "db_isolation": "one_case_one_snapshot",
+        "agent_actor": "U01"
+      }
+    },
+    "fx_P_08": {
+      "case_id": "P-08",
+      "status": "SPEC_ONLY_NOT_PROVISIONED",
+      "requirements": {
+        "db_isolation": "one_case_one_snapshot",
+        "agent_actor": "U01"
+      }
+    },
+    "fx_N_08": {
+      "case_id": "N-08",
+      "status": "SPEC_ONLY_NOT_PROVISIONED",
+      "requirements": {
+        "supplier_status": "new",
+        "db_isolation": "one_case_one_snapshot",
+        "required_actors": "as_defined_per_step"
+      }
+    },
+    "fx_N_09": {
+      "case_id": "N-09",
+      "status": "SPEC_ONLY_NOT_PROVISIONED",
+      "requirements": {
+        "supplier_status": "active",
+        "budget": "sufficient",
+        "db_isolation": "one_case_one_snapshot",
+        "required_actors": "as_defined_per_step"
+      }
+    }
+  }
+}

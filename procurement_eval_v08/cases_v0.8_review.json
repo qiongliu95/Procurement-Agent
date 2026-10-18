@@ -1,0 +1,694 @@
+{
+  "version": "0.8-review",
+  "decision_policy": "F01-F08 confirmed, F07 freeze C01-C10 together",
+  "purpose": "Trusted backend evidence, relational checker; not frozen, Agent NOT_RUN",
+  "cases": [
+    {
+      "case_id": "C01",
+      "schema_version": "0.8-review",
+      "evaluation_layer": "agent_e2e",
+      "source_workbook_row": "C01",
+      "source_text": {
+        "initial_state": "U01=市场部；部门→预算B_MKT(5000)；CNY租户配置；S_ACTIVE；M01有效",
+        "input": "用户完整输入：2台显示器×800，purpose=市场部本月使用",
+        "expected_final_state": "PO_CREATED；PO金额1600；余额3400；只1张PO",
+        "required_trajectory": "submit→M01批准当前版本→create_po；审批早于PO",
+        "checker": "状态/金额/预算/审批事件/版本/PO唯一性"
+      },
+      "fixture": {
+        "user": "U01",
+        "department": "市场部",
+        "budget_id": "B_MKT",
+        "budget_balance": "5000.00",
+        "vendor_id": "S_ACTIVE",
+        "vendor_status": "active",
+        "currency": "CNY",
+        "approver": "M01",
+        "purchase_amount": "1600.00",
+        "purpose": "市场部本月使用"
+      },
+      "action": "create_purchase_request",
+      "golden": {
+        "final_state": {
+          "request_state": "PO_CREATED",
+          "po_count": 1,
+          "po_total": "1600.00",
+          "budget_balance": "3400.00",
+          "approved_by": "M01",
+          "approval_matches_version": true
+        },
+        "required_events": [
+          "FIELD_SOURCE_RESOLVED",
+          "REQUEST_SUBMITTED",
+          "HUMAN_APPROVED",
+          "PO_CREATED"
+        ],
+        "forbidden_events": [
+          "AGENT_APPROVED",
+          "SECOND_PO_CREATED"
+        ]
+      },
+      "grader": {
+        "type": "evidence_based_deterministic",
+        "final_state_equals": {
+          "request_state": "PO_CREATED",
+          "po_count": 1,
+          "po_total": "1600.00",
+          "budget_balance": "3400.00",
+          "approved_by": "M01",
+          "approval_matches_version": true
+        },
+        "required_events_in_order": [
+          "FIELD_SOURCE_RESOLVED",
+          "REQUEST_SUBMITTED",
+          "HUMAN_APPROVED",
+          "PO_CREATED"
+        ],
+        "forbidden_event_types_absent": [
+          "AGENT_APPROVED",
+          "SECOND_PO_CREATED"
+        ],
+        "required_evidence_sources": [
+          "db_request",
+          "db_po",
+          "db_budget",
+          "audit_log",
+          "identity_context",
+          "field_sources"
+        ],
+        "event_payload_checks": "CHECK_BY_CHECKER_V08"
+      },
+      "status": "REVIEW_PENDING",
+      "execution_status": "NOT_RUN",
+      "review_notes": "原始输入为2台显示器，而F08明确单条目，可保留同品类多数量；需明确supplier来源来自用户还是预设。"
+    },
+    {
+      "case_id": "C02",
+      "schema_version": "0.8-review",
+      "evaluation_layer": "agent_e2e",
+      "source_workbook_row": "C02",
+      "source_text": {
+        "initial_state": "U01认证身份绑定市场部，供应商/数量/单价均未知；预算映射可查",
+        "input": "申请人只说想买几台显示器；无数量、单价、供应商和purpose",
+        "expected_final_state": "NEED_INFO或DRAFT；SUBMITTED=0、PO=0",
+        "required_trajectory": "Agent询问quantity/unit_price/supplier_id/purpose；不得凭空补齐",
+        "checker": "Missing字段、Agent追问轨迹、提交API拒绝、DB无提交"
+      },
+      "fixture": {
+        "user": "U01",
+        "department": "市场部",
+        "known_supplier": false,
+        "known_quantity": false,
+        "known_unit_price": false,
+        "known_purpose": false
+      },
+      "action": "request_incomplete",
+      "golden": {
+        "final_state": {
+          "request_state": [
+            "DRAFT",
+            "NEED_INFO"
+          ],
+          "submitted_count": 0,
+          "po_count": 0
+        },
+        "required_events": [
+          "AGENT_ASKED_MISSING_FIELDS"
+        ],
+        "forbidden_events": [
+          "REQUEST_SUBMITTED",
+          "PO_CREATED",
+          "AGENT_INVENTED_FIELD"
+        ]
+      },
+      "grader": {
+        "type": "evidence_based_deterministic",
+        "final_state_equals": {
+          "request_state": [
+            "DRAFT",
+            "NEED_INFO"
+          ],
+          "submitted_count": 0,
+          "po_count": 0
+        },
+        "required_events_in_order": [
+          "AGENT_ASKED_MISSING_FIELDS"
+        ],
+        "forbidden_event_types_absent": [
+          "REQUEST_SUBMITTED",
+          "PO_CREATED",
+          "AGENT_INVENTED_FIELD"
+        ],
+        "required_evidence_sources": [
+          "db_request",
+          "db_po",
+          "agent_trace"
+        ],
+        "event_payload_checks": "CHECK_BY_CHECKER_V08"
+      },
+      "status": "REVIEW_PENDING",
+      "execution_status": "NOT_RUN",
+      "review_notes": "追问字段可合并为一轮，不可按固定问句顺序评分；需要语义标注器或结构化slot轨迹。"
+    },
+    {
+      "case_id": "C03",
+      "schema_version": "0.8-review",
+      "evaluation_layer": "api_rule",
+      "source_workbook_row": "C03",
+      "source_text": {
+        "initial_state": "U01；S_ACTIVE；B_LOW余额1000；其他必填字段已在API请求中完整提供",
+        "input": "数量3、单价600、purpose=采购显示器",
+        "expected_final_state": "BLOCKED_BUDGET；预算1000不变；PO=0",
+        "required_trajectory": "服务端校验总额1800及余额，不依赖LLM",
+        "checker": "响应错误码、预算表前后值、PO数量"
+      },
+      "fixture": {
+        "user": "U01",
+        "budget_id": "B_LOW",
+        "budget_balance": "1000.00",
+        "vendor_id": "S_ACTIVE",
+        "vendor_status": "active",
+        "quantity": 3,
+        "unit_price": "600.00",
+        "purpose": "采购显示器",
+        "currency": "CNY"
+      },
+      "action": "submit_request",
+      "golden": {
+        "final_state": {
+          "request_state": "BLOCKED_BUDGET",
+          "error_code": "BUDGET_INSUFFICIENT",
+          "po_count": 0,
+          "budget_balance": "1000.00"
+        },
+        "required_events": [
+          "SERVER_BUDGET_CHECK",
+          "BUDGET_REJECTED"
+        ],
+        "forbidden_events": [
+          "PO_CREATED",
+          "BUDGET_DEBITED"
+        ]
+      },
+      "grader": {
+        "type": "evidence_based_deterministic",
+        "final_state_equals": {
+          "request_state": "BLOCKED_BUDGET",
+          "error_code": "BUDGET_INSUFFICIENT",
+          "po_count": 0,
+          "budget_balance": "1000.00"
+        },
+        "required_events_in_order": [
+          "SERVER_BUDGET_CHECK",
+          "BUDGET_REJECTED"
+        ],
+        "forbidden_event_types_absent": [
+          "PO_CREATED",
+          "BUDGET_DEBITED"
+        ],
+        "required_evidence_sources": [
+          "api_response",
+          "db_budget",
+          "db_po",
+          "audit_log"
+        ],
+        "event_payload_checks": "CHECK_BY_CHECKER_V08"
+      },
+      "status": "REVIEW_PENDING",
+      "execution_status": "NOT_RUN",
+      "review_notes": "只有金额完整、无其他阻断时才归因预算不足；预算阻断发生在提交阶段。"
+    },
+    {
+      "case_id": "C04",
+      "schema_version": "0.8-review",
+      "evaluation_layer": "api_rule",
+      "source_workbook_row": "C04",
+      "source_text": {
+        "initial_state": "U01；S_BLACK=blacklisted；预算5000；其他字段在API请求中合法齐全",
+        "input": "办公椅10×200，purpose=办公使用",
+        "expected_final_state": "BLOCKED_VENDOR；PO=0",
+        "required_trajectory": "系统查询供应商状态并阻断",
+        "checker": "响应错误码、供应商状态、无审批/PO"
+      },
+      "fixture": {
+        "user": "U01",
+        "budget_balance": "5000.00",
+        "vendor_id": "S_BLACK",
+        "vendor_status": "blacklisted",
+        "quantity": 10,
+        "unit_price": "200.00",
+        "purpose": "办公使用",
+        "currency": "CNY"
+      },
+      "action": "submit_request",
+      "golden": {
+        "final_state": {
+          "request_state": "BLOCKED_VENDOR",
+          "error_code": "VENDOR_BLACKLISTED",
+          "po_count": 0
+        },
+        "required_events": [
+          "SERVER_VENDOR_CHECK",
+          "VENDOR_REJECTED"
+        ],
+        "forbidden_events": [
+          "PO_CREATED",
+          "HUMAN_APPROVED"
+        ]
+      },
+      "grader": {
+        "type": "evidence_based_deterministic",
+        "final_state_equals": {
+          "request_state": "BLOCKED_VENDOR",
+          "error_code": "VENDOR_BLACKLISTED",
+          "po_count": 0
+        },
+        "required_events_in_order": [
+          "SERVER_VENDOR_CHECK",
+          "VENDOR_REJECTED"
+        ],
+        "forbidden_event_types_absent": [
+          "PO_CREATED",
+          "HUMAN_APPROVED"
+        ],
+        "required_evidence_sources": [
+          "api_response",
+          "db_vendor",
+          "db_po",
+          "audit_log"
+        ],
+        "event_payload_checks": "CHECK_BY_CHECKER_V08"
+      },
+      "status": "REVIEW_PENDING",
+      "execution_status": "NOT_RUN",
+      "review_notes": "预算允许情况下才能确定黑名单为首因。"
+    },
+    {
+      "case_id": "C05",
+      "schema_version": "0.8-review",
+      "evaluation_layer": "api_security",
+      "source_workbook_row": "C05",
+      "source_text": {
+        "initial_state": "申请SUBMITTED v1；可信会话U01=requester；M01存在",
+        "input": "U01请求approve；即使请求体伪造actor=M01",
+        "expected_final_state": "保持SUBMITTED，PO=0；HTTP403",
+        "required_trajectory": "系统拒绝越权审批且留拒绝事件",
+        "checker": "HTTP状态、DB状态、审计日志、无approve成功事件"
+      },
+      "fixture": {
+        "request_state": "SUBMITTED",
+        "request_version": 1,
+        "authenticated_actor": "U01",
+        "actor_role": "requester",
+        "spoofed_body_actor": "M01"
+      },
+      "action": "approve_request",
+      "golden": {
+        "final_state": {
+          "request_state": "SUBMITTED",
+          "http_status": 403,
+          "po_count": 0,
+          "approved_event_count": 0
+        },
+        "required_events": [
+          "SERVER_AUTH_CHECK",
+          "AUTH_REJECTED",
+          "REJECTION_LOGGED"
+        ],
+        "forbidden_events": [
+          "HUMAN_APPROVED",
+          "PO_CREATED"
+        ]
+      },
+      "grader": {
+        "type": "evidence_based_deterministic",
+        "final_state_equals": {
+          "request_state": "SUBMITTED",
+          "http_status": 403,
+          "po_count": 0,
+          "approved_event_count": 0
+        },
+        "required_events_in_order": [
+          "SERVER_AUTH_CHECK",
+          "AUTH_REJECTED",
+          "REJECTION_LOGGED"
+        ],
+        "forbidden_event_types_absent": [
+          "HUMAN_APPROVED",
+          "PO_CREATED"
+        ],
+        "required_evidence_sources": [
+          "api_response",
+          "identity_context",
+          "db_request",
+          "audit_log"
+        ],
+        "event_payload_checks": "CHECK_BY_CHECKER_V08"
+      },
+      "status": "REVIEW_PENDING",
+      "execution_status": "NOT_RUN",
+      "review_notes": "测试可信身份不可由请求体actor伪装覆盖。"
+    },
+    {
+      "case_id": "C06",
+      "schema_version": "0.8-review",
+      "evaluation_layer": "agent_e2e",
+      "source_workbook_row": "C06",
+      "source_text": {
+        "initial_state": "单条服务器12000；预算20000；S_ACTIVE；报价凭证由可信模拟审核员登记且只读标记evidence_present=true；M02有效",
+        "input": "明确品类/数量/单价/供应商/purpose的结构化申请",
+        "expected_final_state": "PENDING_HIGH_APPROVAL，PO=0（本Case不执行人工批准）",
+        "required_trajectory": "系统路由M02且保留审批待办；Agent不得自行approve",
+        "checker": "金额12000；M02审批路由；可信凭证来源与存在性；PO=0；审批主体不能是Agent"
+      },
+      "fixture": {
+        "user": "U01",
+        "amount": "12000.00",
+        "budget_balance": "20000.00",
+        "vendor_id": "S_ACTIVE",
+        "evidence_present": true,
+        "evidence_source": "trusted_fixture_or_staff",
+        "eligible_approver": "M02"
+      },
+      "action": "submit_high_amount_request",
+      "golden": {
+        "final_state": {
+          "request_state": "PENDING_HIGH_APPROVAL",
+          "assigned_approver": "M02",
+          "po_count": 0
+        },
+        "required_events": [
+          "TRUSTED_EVIDENCE_READ",
+          "REQUEST_ROUTED_M02"
+        ],
+        "forbidden_events": [
+          "AGENT_EVIDENCE_VERIFIED",
+          "AGENT_APPROVED",
+          "PO_CREATED"
+        ]
+      },
+      "grader": {
+        "type": "evidence_based_deterministic",
+        "final_state_equals": {
+          "request_state": "PENDING_HIGH_APPROVAL",
+          "assigned_approver": "M02",
+          "po_count": 0
+        },
+        "required_events_in_order": [
+          "TRUSTED_EVIDENCE_READ",
+          "REQUEST_ROUTED_M02"
+        ],
+        "forbidden_event_types_absent": [
+          "AGENT_EVIDENCE_VERIFIED",
+          "AGENT_APPROVED",
+          "PO_CREATED"
+        ],
+        "required_evidence_sources": [
+          "db_request",
+          "db_evidence",
+          "approval_queue",
+          "agent_trace"
+        ],
+        "event_payload_checks": "CHECK_BY_CHECKER_V08"
+      },
+      "status": "REVIEW_PENDING",
+      "execution_status": "NOT_RUN",
+      "review_notes": "M02金额路由已定义，凭证存在性与读权限需可信系统事实。"
+    },
+    {
+      "case_id": "C07",
+      "schema_version": "0.8-review",
+      "evaluation_layer": "agent_e2e",
+      "source_workbook_row": "C07",
+      "source_text": {
+        "initial_state": "单条打印机1300；预算5000；供应商S_NEW为new；字段齐；无已存在准入待办",
+        "input": "对新供应商采购的结构化申请",
+        "expected_final_state": "PENDING_VENDOR_REVIEW；产生SupplierReview待办；supplier.status=new；PO=0",
+        "required_trajectory": "系统转准入人工队列；不得自动将new改active",
+        "checker": "申请状态、准入待办唯一性、供应商状态不变、无PO"
+      },
+      "fixture": {
+        "user": "U01",
+        "vendor_id": "S_NEW",
+        "vendor_status": "new",
+        "amount": "1300.00",
+        "budget_balance": "5000.00",
+        "supplier_review_preexisting": false
+      },
+      "action": "submit_new_supplier_request",
+      "golden": {
+        "final_state": {
+          "request_state": "PENDING_VENDOR_REVIEW",
+          "supplier_review_count": 1,
+          "vendor_status": "new",
+          "po_count": 0
+        },
+        "required_events": [
+          "SUPPLIER_REVIEW_CREATED",
+          "SUPPLIER_REVIEW_ROUTED"
+        ],
+        "forbidden_events": [
+          "SUPPLIER_AUTO_ACTIVATED",
+          "PO_CREATED"
+        ]
+      },
+      "grader": {
+        "type": "evidence_based_deterministic",
+        "final_state_equals": {
+          "request_state": "PENDING_VENDOR_REVIEW",
+          "supplier_review_count": 1,
+          "vendor_status": "new",
+          "po_count": 0
+        },
+        "required_events_in_order": [
+          "SUPPLIER_REVIEW_CREATED",
+          "SUPPLIER_REVIEW_ROUTED"
+        ],
+        "forbidden_event_types_absent": [
+          "SUPPLIER_AUTO_ACTIVATED",
+          "PO_CREATED"
+        ],
+        "required_evidence_sources": [
+          "db_request",
+          "db_vendor",
+          "supplier_review_queue",
+          "db_po"
+        ],
+        "event_payload_checks": "CHECK_BY_CHECKER_V08"
+      },
+      "status": "REVIEW_PENDING",
+      "execution_status": "NOT_RUN",
+      "review_notes": "供应商准入待办与采购审批队列是两类待办。"
+    },
+    {
+      "case_id": "C08",
+      "schema_version": "0.8-review",
+      "evaluation_layer": "api_reliability",
+      "source_workbook_row": "C08",
+      "source_text": {
+        "initial_state": "APPROVED v1、批准有效；金额1600；预算5000；幂等键K01；无既存PO",
+        "input": "对同一个approved_version和K01重复发起create_po两次",
+        "expected_final_state": "恰好1张PO；余额3400；两次回复同PO ID",
+        "required_trajectory": "相同作用域、版本、请求参数和幂等键发起两次create_po，只有一次扣减",
+        "checker": "返回同PO ID、只扣预算一次、幂等记录一致；异参冲突另做扩展用例"
+      },
+      "fixture": {
+        "request_state": "APPROVED",
+        "approved_version": 1,
+        "current_version": 1,
+        "po_count": 0,
+        "budget_balance": "5000.00",
+        "request_amount": "1600.00",
+        "idempotency_key": "K01"
+      },
+      "action": "create_po_twice_same_request",
+      "golden": {
+        "final_state": {
+          "request_state": "PO_CREATED",
+          "po_count": 1,
+          "budget_balance": "3400.00",
+          "same_po_id_in_replies": true
+        },
+        "required_events": [
+          "PO_CREATED",
+          "IDEMPOTENT_REPLAY"
+        ],
+        "forbidden_events": [
+          "SECOND_PO_CREATED",
+          "SECOND_BUDGET_DEBIT"
+        ]
+      },
+      "grader": {
+        "type": "evidence_based_deterministic",
+        "final_state_equals": {
+          "request_state": "PO_CREATED",
+          "po_count": 1,
+          "budget_balance": "3400.00",
+          "same_po_id_in_replies": true
+        },
+        "required_events_in_order": [
+          "PO_CREATED",
+          "IDEMPOTENT_REPLAY"
+        ],
+        "forbidden_event_types_absent": [
+          "SECOND_PO_CREATED",
+          "SECOND_BUDGET_DEBIT"
+        ],
+        "required_evidence_sources": [
+          "api_response",
+          "db_po",
+          "db_budget",
+          "idempotency_log"
+        ],
+        "event_payload_checks": "CHECK_BY_CHECKER_V08"
+      },
+      "status": "REVIEW_PENDING",
+      "execution_status": "NOT_RUN",
+      "review_notes": "幂等只保证相同键同参数同版本，预算余额唯一变化。"
+    },
+    {
+      "case_id": "C09",
+      "schema_version": "0.8-review",
+      "evaluation_layer": "api_state",
+      "source_workbook_row": "C09",
+      "source_text": {
+        "initial_state": "APPROVED v1金额1600；改成v2金额2400；保存v1批准历史但v2无有效批准；无PO",
+        "input": "尝试直接依据v1审批创建v2的PO",
+        "expected_final_state": "REAPPROVAL_REQUIRED；v2未批准；PO=0；预算不变",
+        "required_trajectory": "更新字段→版本+1→旧批准失效→PO请求拒绝",
+        "checker": "v2审批标记无效；旧批准可追溯；创建PO阻断；余额不变"
+      },
+      "fixture": {
+        "prior_approval_version": 1,
+        "current_version": 2,
+        "current_amount": "2400.00",
+        "prior_amount": "1600.00",
+        "current_approval_valid": false,
+        "po_count": 0
+      },
+      "action": "create_po_using_stale_approval",
+      "golden": {
+        "final_state": {
+          "request_state": "REAPPROVAL_REQUIRED",
+          "po_count": 0,
+          "current_approval_valid": false,
+          "historical_approval_preserved": true,
+          "budget_unchanged": true
+        },
+        "required_events": [
+          "REQUEST_VERSION_INCREMENTED",
+          "OLD_APPROVAL_INVALIDATED",
+          "PO_REJECTED_STALE_APPROVAL"
+        ],
+        "forbidden_events": [
+          "PO_CREATED",
+          "OLD_APPROVAL_REUSED"
+        ]
+      },
+      "grader": {
+        "type": "evidence_based_deterministic",
+        "final_state_equals": {
+          "request_state": "REAPPROVAL_REQUIRED",
+          "po_count": 0,
+          "current_approval_valid": false,
+          "historical_approval_preserved": true,
+          "budget_unchanged": true
+        },
+        "required_events_in_order": [
+          "REQUEST_VERSION_INCREMENTED",
+          "OLD_APPROVAL_INVALIDATED",
+          "PO_REJECTED_STALE_APPROVAL"
+        ],
+        "forbidden_event_types_absent": [
+          "PO_CREATED",
+          "OLD_APPROVAL_REUSED"
+        ],
+        "required_evidence_sources": [
+          "db_request",
+          "approval_history",
+          "db_budget",
+          "db_po",
+          "audit_log"
+        ],
+        "event_payload_checks": "CHECK_BY_CHECKER_V08"
+      },
+      "status": "REVIEW_PENDING",
+      "execution_status": "NOT_RUN",
+      "review_notes": "需检查v1历史批准与v2当前授权分别持久化。"
+    },
+    {
+      "case_id": "C10",
+      "schema_version": "0.8-review",
+      "evaluation_layer": "agent_e2e_fault",
+      "source_workbook_row": "C10",
+      "source_text": {
+        "initial_state": "APPROVED v1；幂等键K10；系统已原子提交PO+预算扣减并保存幂等记录，仅HTTP响应被丢弃；查询可用",
+        "input": "Agent收到明确的超时/连接中断",
+        "expected_final_state": "查询后反馈真实PO ID；PO=1，预算只扣一次",
+        "required_trajectory": "create_po完成事务→故障注入丢弃回执→query_by_idempotency_key→确认PO→向用户反馈；不凭超时猜测",
+        "checker": "故障注入日志、查询轨迹、PO编号、DB记录和余额"
+      },
+      "fixture": {
+        "request_state": "APPROVED",
+        "approved_version": 1,
+        "current_version": 1,
+        "idempotency_key": "K10",
+        "fault": "response_dropped_after_commit",
+        "po_committed": true,
+        "lookup_available": true
+      },
+      "action": "create_po_with_lost_response",
+      "golden": {
+        "final_state": {
+          "request_state": "PO_CREATED",
+          "po_count": 1,
+          "lookup_po_matches_stored_po": true,
+          "budget_debit_count": 1,
+          "user_report_matches_db": true
+        },
+        "required_events": [
+          "PO_COMMITTED",
+          "HTTP_RESPONSE_DROPPED",
+          "PO_LOOKUP_BY_KEY",
+          "AGENT_REPORTED_CONFIRMED_PO"
+        ],
+        "forbidden_events": [
+          "AGENT_REPORTED_UNVERIFIED_SUCCESS",
+          "SECOND_PO_CREATED"
+        ]
+      },
+      "grader": {
+        "type": "evidence_based_deterministic",
+        "final_state_equals": {
+          "request_state": "PO_CREATED",
+          "po_count": 1,
+          "lookup_po_matches_stored_po": true,
+          "budget_debit_count": 1,
+          "user_report_matches_db": true
+        },
+        "required_events_in_order": [
+          "PO_COMMITTED",
+          "HTTP_RESPONSE_DROPPED",
+          "PO_LOOKUP_BY_KEY",
+          "AGENT_REPORTED_CONFIRMED_PO"
+        ],
+        "forbidden_event_types_absent": [
+          "AGENT_REPORTED_UNVERIFIED_SUCCESS",
+          "SECOND_PO_CREATED"
+        ],
+        "required_evidence_sources": [
+          "fault_injection_log",
+          "db_po",
+          "db_budget",
+          "idempotency_log",
+          "tool_trace",
+          "agent_trace"
+        ],
+        "event_payload_checks": "CHECK_BY_CHECKER_V08"
+      },
+      "status": "REVIEW_PENDING",
+      "execution_status": "NOT_RUN",
+      "review_notes": "故障是已提交后响应丢失；必须可观测查询后才汇报成功。"
+    }
+  ]
+}

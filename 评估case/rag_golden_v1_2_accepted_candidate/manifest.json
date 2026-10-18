@@ -1,0 +1,22 @@
+{
+  "version": "rag-golden-1.2.1-accepted-candidate",
+  "input_zip": "E:\\AI-Research\\Procurement-Agent\\RAG Golden v1.2 完整包.zip",
+  "input_zip_sha256": "024a66500ff906af2bc742e09dab4b66a76b0a5da7d9d7a943acec6073b74c39",
+  "cases": 46,
+  "accepted": 46,
+  "quality_status_counts": {
+    "PASS": 30,
+    "IMPROVEMENT_RECOMMENDED": 16
+  },
+  "candidate_only": true,
+  "files": {
+    "evaluation_cases.csv": "5240fe3b3db9672f7d047bba0de478a47c6d4244b5db48dfe361682075dcccfd",
+    "evaluation_cases.jsonl": "da0bf67dbba930eb105bb0c36bbad0fa9e8359ee09a3790fbf6eecb69f2a7dbf",
+    "evaluation_schema.json": "83819359c9b5e2ec5fdfad59f574f87b18feefcc7ce5c7f1dd29e7c770d8f1ab",
+    "README.md": "a7cdfa7c3165734b937925912c136e3799fcb7410ca85c57408e262a4e34109c",
+    "skipped_cases.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "report": "E:\\AI-Research\\Procurement-Agent\\procurement_eval_v08\\evaluation\\reports\\rag_golden_v1_2_acceptance\\final_quality_acceptance_report.md",
+  "source_manifest_sha256": "b0121dde35da3451b4bb66fa4185d59ba729703baf46ad2cc6440f855107d223",
+  "untouched_protected_files": 797
+}
